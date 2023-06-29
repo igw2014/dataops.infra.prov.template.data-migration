@@ -1,0 +1,15 @@
+{
+  "language": "python",
+  "app": "pipenv run python data_migration_infra_handler.py",
+  "projectId": "bad919b4-0d66-4ecf-a2ad-e568c63c5723",
+  "sendCrashReports": "false",
+  "terraformProviders": [
+    "hashicorp/aws@~> 4.66.1"
+  ],
+  "terraformModules": [],
+  "codeMakerOutput": "imports",
+  "context": {
+    "excludeStackIdFromLogicalIds": "true",
+    "allowSepCharsInLogicalIds": "true"
+  }
+}

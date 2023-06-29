@@ -1,0 +1,4 @@
+"country_id","country_name","country_code","nat_lang_code","currency_code"
+1,India,IN,1,INR
+2,Japan,JP,2,YEN
+3,Germany,GER,3,EURO
