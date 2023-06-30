@@ -1,7 +1,6 @@
 import argparse
 import csv
 import traceback
-import boto3
 from csx.core.data.migration.utity.postgres_client import PostgresqlClient
 from csx.core.data.migration.service.management.NetworkServiceManager import NetworkServiceManager
 
@@ -19,7 +18,7 @@ if __name__ == "__main__":
     # print("args.secgrp_id=%s" % args.secgrp_id)
     # print("args.ec2_private_ip=%s" % args.ec2_private_ip)
     project_vars = {}
-    with open("dev.tfvars") as tfvar_file:
+    with open("{{ cookiecutter.environment }}.tfvars") as tfvar_file:
         for line in tfvar_file:
             name, var = line.partition("=")[::2]
             project_vars[name.strip()] = str(var)
