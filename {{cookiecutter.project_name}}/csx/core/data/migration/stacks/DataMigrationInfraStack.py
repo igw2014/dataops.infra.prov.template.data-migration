@@ -17,7 +17,7 @@ class DataMigrationInfraStack(TerraformStack):
         network_infra_variables = NetworkInfraVariables(scope, project_vars)
         database_infra_variables = DatabaseInfraVariables(scope, project_vars)
         dms_3_4_7_infra_variables = DMS3_4_7_InfraVariables(scope, project_vars)
-        DMS3_4_7Construct(self, "dms-3.5.0-construct"
+        DMS3_4_7Construct(self, "dms-3.4.7-construct"
                           ,common_variables
                           ,network_infra_variables
                           ,dms_3_4_7_infra_variables
