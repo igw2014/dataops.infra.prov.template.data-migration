@@ -14,8 +14,8 @@ from csx.core.data.migration.stacks.DataMigrationInfraStack import DataMigration
 # //    "terraform-aws-modules/rds-aurora",-->Not found
 # //    "terraform-aws-modules/dms"
 project_vars = {}
-with open("staging.auto.tfvars") as staging_file:
-    for line in staging_file:
+with open("{{ cookiecutter.environment }}.tfvar") as env_file:
+    for line in env_file:
         name, var = line.partition("=")[::2]
         project_vars[name.strip()] = str(var)
 app = App()

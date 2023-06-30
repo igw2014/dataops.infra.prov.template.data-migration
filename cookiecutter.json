@@ -1,3 +1,5 @@
 {
-"project_name": "default_name"
+"project_name": "default_name",
+"tenant_name": "test",
+"environment": "default_env"
 }
