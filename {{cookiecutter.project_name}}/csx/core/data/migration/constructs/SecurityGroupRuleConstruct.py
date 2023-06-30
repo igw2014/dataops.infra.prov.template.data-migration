@@ -36,7 +36,7 @@ class SecurityGroupRuleConstruct(Construct):
         # )
 
         data_aws_security_group_custom = DataAwsSecurityGroup(
-            id=security_group_id,
+            id=sample_db_security_group_id,
             scope=scope,
             id_='data_aws_security_group_custom'
         )

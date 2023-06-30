@@ -13,6 +13,7 @@ dms_security_group_id="sg-09fd7e8513477732f"
 ec2_private_ip="10.0.1.35"
 ssh_host="3.236.183.225"
 ssh_pkey_path=" /Users/akshaytigga/Downloads/catdevdopsec2kp1.pem"
+cidr_blocks="[10.0.1.35/24]"
 # Sample Database Infra Variables
 db_name="salesdev"
 schema="homeequipments"
