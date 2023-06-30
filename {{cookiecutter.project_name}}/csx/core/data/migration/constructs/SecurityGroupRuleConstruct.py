@@ -4,6 +4,7 @@ from constructs import Construct
 from csx.core.data.migration.variables.CommonVariables import CommonVariables
 from csx.core.data.migration.variables.NetworkInfraVariables import NetworkInfraVariables
 from imports.aws.data_aws_security_group import DataAwsSecurityGroup
+from imports.aws.data_aws_vpc import DataAwsVpc
 from imports.aws.provider import AwsProvider
 from imports.aws.security_group_rule import SecurityGroupRule
 
@@ -22,10 +23,10 @@ class SecurityGroupRuleConstruct(Construct):
         #route table id to come from as input from user through tfcars file
         region = common_vars.__get_region__()[1:-1][:-1]
         profile = common_vars.__get_profile__()[1:-1][:-1]
-        security_group_id = network_vars.__get_security_group_id__()[1:-1][:-1]
+        sample_db_security_group_id = network_vars.__get_sample_db_security_group_id__()[1:-1][:-1]
         cidr_blocks = network_vars.__get_cidr_blocks__()[1:-1]
-        folder = common_vars.__get_s3_key__()[1:-1][:-1]
-        bucket = common_vars.__get_s3_bucket__()[1:-1][:-1]
+        folder = common_vars.__get_sample_db_s3_key__()[1:-1][:-1]
+        bucket = common_vars.__get_tf_state_s3_bucket__()[1:-1][:-1]
         # above provision was done because terraform variables not working so reading tfvars as file
         AwsProvider(self, "AWS", region=region, profile=profile)
         # data_aws_vpc = DataAwsVpc(

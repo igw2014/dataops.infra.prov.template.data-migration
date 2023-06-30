@@ -1,5 +1,6 @@
 from cdktf import TerraformStack
 from constructs import Construct
+from csx.core.data.migration.constructs.VPCEndpointConstruct import VPCEndpointConstruct
 from csx.core.data.migration.constructs.SecurityGroupRuleConstruct import SecurityGroupRuleConstruct
 from csx.core.data.migration.variables.CommonVariables import CommonVariables
 from csx.core.data.migration.variables.NetworkInfraVariables import NetworkInfraVariables

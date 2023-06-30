@@ -3,10 +3,11 @@ from constructs import Construct
 
 
 class NetworkInfraVariables:
-    security_group_id = ''
+    sample_db_security_group_id = ''
     dms_security_group_id = ''
     cidr_blocks = ''
     vpc_id = ''
+
     def __init__(self, scope: Construct, project_vars: dict):
         # self.security_group_id = TerraformVariable(scope, "security_group_id",
         #                                 type="string",
@@ -19,13 +20,13 @@ class NetworkInfraVariables:
         #                                  default="",
         #                                  description="cidr_blocks"
         #                                  )
-        self.security_group_id = project_vars["security_group_id"]
+        self.sample_db_security_group_id = project_vars["sample_db_security_group_id"]
         self.cidr_blocks = project_vars["cidr_blocks"]
         self.vpc_id = project_vars["vpc_id"]
         self.dms_security_group_id = project_vars["dms_security_group_id"]
 
-    def __get_security_group_id__(self):
-        return self.security_group_id
+    def __get_sample_db_security_group_id__(self):
+        return self.sample_db_security_group_id
 
     def __get_cidr_blocks__(self):
         return self.cidr_blocks

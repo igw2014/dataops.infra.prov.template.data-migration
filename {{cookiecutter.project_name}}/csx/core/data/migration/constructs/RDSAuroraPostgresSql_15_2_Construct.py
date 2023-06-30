@@ -26,15 +26,15 @@ class RDSAuroraPostgresSql_15_2_Construct(Construct):
 
         region = common_vars.__get_region__()[1:-1][:-1]
         profile = common_vars.__get_profile__()[1:-1][:-1]
-        folder = common_vars.__get_s3_key__()[1:-1][:-1]
         sample_db_s3_folder = common_vars.__get_sample_db_s3_key__()[1:-1][:-1]
-        bucket = common_vars.__get_s3_bucket__()[1:-1][:-1]
+        bucket = common_vars.__get_tf_state_s3_bucket__()[1:-1][:-1]
         vpc_id = network_inra_vars.__get_vpc_id__()[1:-1][:-1]
-        security_group_id = network_inra_vars.__get_security_group_id__()[1:-1][:-1]
+        security_group_id = network_inra_vars.__get_sample_db_security_group_id__()[1:-1][:-1]
         tenant = common_vars.__get_tenant__()[1:-1][:-1]
-        staging_env_prefix = common_vars.__get_staging_env_prefix__()[1:-1][:-1]
-        db_subnet_group_name = database_infra_variables.__get_db_subnet_group_name__()[1:-1][:-1]
-        rds_cluster_parameter_group_name = database_infra_variables.__get_rds_cluster_parame_group_name__()[1:-1][:-1]
+        env_prefix = common_vars.__get_env_prefix__()[1:-1][:-1]
+        # staging_env_prefix = common_vars.__get_staging_env_prefix__()[1:-1][:-1]
+        # db_subnet_group_name = database_infra_variables.__get_db_subnet_group_name__()[1:-1][:-1]
+        # rds_cluster_parameter_group_name = database_infra_variables.__get_rds_cluster_parame_group_name__()[1:-1][:-1]
         db_name = database_infra_variables.__get_db_name__()[1:-1][:-1]
         db_master_user = database_infra_variables.__get_db_master_user__()[1:-1][:-1]
         db_master_pwd = database_infra_variables.__get_db_master_pwd__()[1:-1][:-1]
@@ -65,7 +65,7 @@ class RDSAuroraPostgresSql_15_2_Construct(Construct):
 
         y = ",".join(map(str, data_aws_subnets.ids))
         # cat-dev to come as input from user as prefix either via tfvars or during module creation from template
-        db_subnet_group_name = db_subnet_group_name + '-' + tenant + '-' + staging_env_prefix + '-dops-subnet-grp'
+        db_subnet_group_name = db_name + '-' + tenant + '-' + env_prefix + '-dops-subnet-grp'
         db_subnet_group = DbSubnetGroup(
             name=db_subnet_group_name,
             subnet_ids=[y],
@@ -89,7 +89,7 @@ class RDSAuroraPostgresSql_15_2_Construct(Construct):
             value="pglogical",
             apply_method="pending-reboot"
         )
-        rds_cluster_parameter_group_name = rds_cluster_parameter_group_name + '-' + tenant + '-' + staging_env_prefix + '-dops' \
+        rds_cluster_parameter_group_name = db_name + '-' + tenant + '-' + env_prefix + '-dops' \
                                                                                                                         '-rds-clus-param-grp'
         rds_cluster_parameter_group = RdsClusterParameterGroup(
             name=rds_cluster_parameter_group_name,
@@ -169,8 +169,10 @@ class RDSAuroraPostgresSql_15_2_Construct(Construct):
         # modularity for tenant isolation and accordingly decide the combination for constructs and stack
         # better way to handle multitenancy would be to create separate module for each tenant
         key = sample_db_s3_folder + "/terraform.tfstate"
+        bucket_name = tenant+'-'+env_prefix+bucket
+        print(bucket_name)
         S3Backend(self,
-                  bucket=bucket,
+                  bucket=bucket_name,
                   key=key,
                   encrypt=True,
                   region=region

@@ -31,13 +31,12 @@ class DMS3_4_7Construct(Construct):
         super().__init__(scope, id)
         region = common_vars.__get_region__()[1:-1][:-1]
         profile = common_vars.__get_profile__()[1:-1][:-1]
-        folder = common_vars.__get_s3_key__()[1:-1][:-1]
-        data_migration_s3_folder = common_vars.__get_s3_key__()[1:-1][:-1]
-        bucket = common_vars.__get_s3_bucket__()[1:-1][:-1]
+        data_migration_s3_folder = common_vars.__get_data_migration_s3_key__()[1:-1][:-1]
+        bucket = common_vars.__get_tf_state_s3_bucket__()[1:-1][:-1]
         tenant = common_vars.__get_tenant__()[1:-1][:-1]
-        staging_env_prefix = common_vars.__get_staging_env_prefix__()[1:-1][:-1]
+        env_prefix = common_vars.__get_env_prefix__()[1:-1][:-1]
         vpc_id = network_infra_vars.__get_vpc_id__()[1:-1][:-1]
-        security_group_id = network_infra_vars.__get_security_group_id__()[1:-1][:-1]
+        security_group_id = network_infra_vars.__get_dms_security_group_id__()[1:-1][:-1]
         dms_security_group_id = network_infra_vars.__get_dms_security_group_id__()[1:-1][:-1]
         data_replication_engine_name = dms3_4_7_vars.__get_data_replication_engine_name__()[1:-1][:-1]
         source_name = dms3_4_7_vars.__get_source_name__()[1:-1][:-1]
@@ -78,7 +77,7 @@ class DMS3_4_7Construct(Construct):
         # multi_az to be false for dev and true for staging and prod env, to be provided as input by user in tfvars file
         # engine version not configurable hence hardcoded
         # cat-dev to come as a prefic from user as input
-        data_replication_engine_name = data_replication_engine_name + '-' + tenant + '-' + staging_env_prefix + '-dops-repl-inst'
+        data_replication_engine_name = data_replication_engine_name + '-' + tenant + '-' + env_prefix + '-dops-repl-inst'
         dms_replication_instance = DmsReplicationInstance(
             allocated_storage=1,
             apply_immediately=True,
@@ -96,7 +95,7 @@ class DMS3_4_7Construct(Construct):
         # endpoint id to be combine with prefix provided by user as input
         # ,user,pwd should come from user as input
         # database name,server name tso be captured from tf o/p
-        source_name = source_name + '-' + tenant + '-' + staging_env_prefix + '-dops-postgresql-src'
+        source_name = source_name + '-' + tenant + '-' + env_prefix + '-dops-postgresql-src'
         dms_source_endpoint = DmsEndpoint(
             endpoint_type="source",
             endpoint_id=source_name,
@@ -118,9 +117,9 @@ class DMS3_4_7Construct(Construct):
         )
         # cat-dev to come from prefix as user input
         dms_s3_target_iam_role = IamRole(
-            name=tenant + '-' + staging_env_prefix + "-dops-dms-s3-access-role",
+            name=tenant + '-' + env_prefix + "-dops-dms-s3-access-role",
             scope=scope,
-            id_=tenant + '-' + staging_env_prefix + "-dops-dms-s3-access-role",
+            id_=tenant + '-' + env_prefix + "-dops-dms-s3-access-role",
             assume_role_policy=json.dumps({
                 "Version": "2012-10-17",
                 "Statement": [
@@ -145,7 +144,7 @@ class DMS3_4_7Construct(Construct):
 
         # cat-dev to come from user input as prefix
         target_s3_bucket = S3Bucket(
-            bucket=target_name + '-' + tenant + '-' + staging_env_prefix,
+            bucket=target_name + '-' + tenant + '-' + env_prefix,
             scope=scope,
             id_="target_s3_bucket"
         )
@@ -162,7 +161,7 @@ class DMS3_4_7Construct(Construct):
         )
 
         # except cat-dev prefix nothing else is configurable
-        target_name = target_name + '-' + tenant + '-' + staging_env_prefix + '-dops-s3-target'
+        target_name = target_name + '-' + tenant + '-' + env_prefix + '-dops-s3-target'
         dms_target_endpoint = DmsEndpoint(
             endpoint_type="target",
             endpoint_id=target_name,
@@ -170,7 +169,7 @@ class DMS3_4_7Construct(Construct):
                 "bucket_name": target_s3_bucket.bucket,
                 "service_access_role_arn": dms_s3_target_iam_role.arn,
                 "add_column_name": True,
-                "timestamp_column_name": target_name + '_' + tenant + '_' + staging_env_prefix + "_timestamp_cdc"
+                "timestamp_column_name": target_name + '_' + tenant + '_' + env_prefix + "_timestamp_cdc"
             },
             engine_name="s3",
             scope=scope,
@@ -189,7 +188,7 @@ class DMS3_4_7Construct(Construct):
         dms_replication_task = DmsReplicationTask(
             migration_type=migration_type,
             replication_instance_arn=dms_replication_instance.replication_instance_arn,
-            replication_task_id=data_replication_task_name + '-' + tenant + '-' + staging_env_prefix,
+            replication_task_id=data_replication_task_name + '-' + tenant + '-' + env_prefix,
             source_endpoint_arn=dms_source_endpoint.endpoint_arn,
             target_endpoint_arn=dms_target_endpoint.endpoint_arn,
             scope=scope,
@@ -209,7 +208,7 @@ class DMS3_4_7Construct(Construct):
                         )
         key = data_migration_s3_folder + "/terraform.tfstate"
         S3Backend(self,
-                  bucket=bucket,
+                  bucket=tenant+'-'+env_prefix+bucket,
                   key=key,
                   encrypt=True,
                   region=region
