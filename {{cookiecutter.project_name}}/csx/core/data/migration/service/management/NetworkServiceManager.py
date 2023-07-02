@@ -3,9 +3,15 @@ import csv
 import traceback
 import boto3
 
+from csx.core.data.migration.variables.NetworkInfraVariables import NetworkInfraVariables
+
+
 class NetworkServiceManager:
 
-    def __add_security_group_rule_to_db__(self,security_group_id, ec2_private_ip):
+    def __add_security_group_rule_to_db__(self, network_variables:NetworkInfraVariables):
+
+        security_group_id = network_variables.__get_sample_db_security_group_id__()[1:-1][:-1]
+        ec2_private_ip = network_variables.__get_ec2_private_ip__()[1:-1][:-1]
         port_range_start = 5432
         protocol = "tcp"
         cidr = ec2_private_ip + "/32"

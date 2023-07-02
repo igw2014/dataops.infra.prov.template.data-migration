@@ -7,6 +7,7 @@ class NetworkInfraVariables:
     dms_security_group_id = ''
     cidr_blocks = ''
     vpc_id = ''
+    ec2_private_ip = ''
 
     def __init__(self, scope: Construct, project_vars: dict):
         # self.security_group_id = TerraformVariable(scope, "security_group_id",
@@ -24,6 +25,7 @@ class NetworkInfraVariables:
         self.cidr_blocks = project_vars["cidr_blocks"]
         self.vpc_id = project_vars["vpc_id"]
         self.dms_security_group_id = project_vars["dms_security_group_id"]
+        self.ec2_private_ip = project_vars["ec2_private_ip"]
 
     def __get_sample_db_security_group_id__(self):
         return self.sample_db_security_group_id
@@ -36,3 +38,6 @@ class NetworkInfraVariables:
 
     def __get_dms_security_group_id__(self):
         return self.dms_security_group_id
+
+    def __get_ec2_private_ip__(self):
+        return self.ec2_private_ip
