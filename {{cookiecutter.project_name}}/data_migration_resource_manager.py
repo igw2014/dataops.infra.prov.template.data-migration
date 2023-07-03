@@ -4,6 +4,7 @@ import traceback
 from cdktf import App
 from csx.core.data.migration.utity.postgres_client import PostgresqlClient
 from csx.core.data.migration.service.management.NetworkServiceManager import NetworkServiceManager
+from csx.core.data.migration.variables.DatabaseInfraVariables import DatabaseInfraVariables
 from csx.core.data.migration.variables.NetworkInfraVariables import NetworkInfraVariables
 
 if __name__ == "__main__":
@@ -23,12 +24,13 @@ if __name__ == "__main__":
     # print("args.secgrp_id=%s" % args.secgrp_id)
     # print("args.ec2_private_ip=%s" % args.ec2_private_ip)
     project_vars = {}
-    with open("dev.tfvars") as tfvar_file:
+    with open("{{ cookiecutter.environment }}.tfvars") as tfvar_file:
         for line in tfvar_file:
             name, var = line.partition("=")[::2]
             project_vars[name.strip()] = str(var)
 
     network_variables = NetworkInfraVariables(app, project_vars)
+    database_infra_variables = DatabaseInfraVariables(app, project_vars)
 
     # sample_db_security_group_id = project_vars['sample_db_security_group_id']
     # ec2_private_ip = project_vars['ec2_private_ip']
@@ -39,52 +41,14 @@ if __name__ == "__main__":
         case "allow-db-access":
             network_service_manager.__add_security_group_rule_to_db__(network_variables)
         case "create-sample-schema":
-            postgres_client.__grant_all_permission__("postgres"
-                                 , project_vars['ssh_host']
-                                 , project_vars['ssh_pkey_path']
-                                 , project_vars['server_name']
-                                 , project_vars['db_master_user']
-                                 , project_vars['db_master_pwd'])
-            postgres_client.__create_database__(project_vars['db_name']
-                                 , project_vars['ssh_host']
-                                 , project_vars['ssh_pkey_path']
-                                 , project_vars['server_name']
-                                 , project_vars['db_master_user']
-                                 , project_vars['db_master_pwd']
-                                 , "postgres")
-            postgres_client.__show_databases__("postgres"
-                                 , project_vars['ssh_host']
-                                 , project_vars['ssh_pkey_path']
-                                 , project_vars['server_name']
-                                 , project_vars['db_master_user']
-                                 , project_vars['db_master_pwd'])
-            postgres_client.__create_schema__(project_vars['db_name']
-                                 , project_vars['ssh_host']
-                                 , project_vars['ssh_pkey_path']
-                                 , project_vars['server_name']
-                                 , project_vars['db_master_user']
-                                 , project_vars['db_master_pwd']
-                                 , project_vars['schema'])
-            postgres_client.__create_tables__(project_vars['db_name']
-                                 , project_vars['ssh_host']
-                                 , project_vars['ssh_pkey_path']
-                                 , project_vars['server_name']
-                                 , project_vars['db_master_user']
-                                 , project_vars['db_master_pwd'])
+            postgres_client.__grant_all_permission__(database_infra_variables)
+            postgres_client.__create_database__(database_infra_variables)
+            postgres_client.__show_databases__(database_infra_variables)
+            postgres_client.__create_schema__(database_infra_variables)
+            postgres_client.__create_tables__(database_infra_variables)
         case "install-db-extensions":
-            postgres_client.__create_extension__(project_vars['db_name']
-                                 , project_vars['ssh_host']
-                                 , project_vars['ssh_pkey_path']
-                                 , project_vars['server_name']
-                                 , project_vars['db_master_user']
-                                 , project_vars['db_master_pwd'])
+            postgres_client.__create_extension__(database_infra_variables)
         case "load-sample-data":
-            postgres_client.__load_tables__(project_vars['db_name']
-                                 , project_vars['ssh_host']
-                                 , project_vars['ssh_pkey_path']
-                                 , project_vars['server_name']
-                                 , project_vars['db_master_user']
-                                 , project_vars['db_master_pwd']
-                                 , project_vars['schema'])
+            postgres_client.__load_tables__(database_infra_variables)
         case _:
             print("Matching Command Not Found.")

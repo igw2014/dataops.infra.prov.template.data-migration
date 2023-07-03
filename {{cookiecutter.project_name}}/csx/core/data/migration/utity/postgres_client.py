@@ -1,10 +1,12 @@
 import argparse
 import csv
+import os
 import traceback
 
 import psycopg2
 from psycopg2 import sql
 from sshtunnel import SSHTunnelForwarder
+from csx.core.data.migration.variables.DatabaseInfraVariables import DatabaseInfraVariables
 
 
 class PostgresqlClient:
@@ -16,7 +18,14 @@ class PostgresqlClient:
                              , db_pwd: str):
         conn = ''
         try:
-            print('Connecting to the PostgreSQL Database...')
+            # print('Connecting to the PostgreSQL Database...')
+            # print(database_name)
+            # print(ssh_host)
+            # print(ssh_pkey_path)
+            # print(db_server_url)
+            # print(db_user)
+            # print(db_pwd)
+
             sshtunnel = SSHTunnelForwarder(
                 ssh_address_or_host=ssh_host,
                 ssh_username='ec2-user',
@@ -40,16 +49,16 @@ class PostgresqlClient:
             print(e.__str__())
         return conn
 
-    def __grant_all_permission__(self, db_name: str
-                                 , ssh_host: str
-                                 , ssh_pkey_path: str
-                                 , db_server_url: str
-                                 , db_user: str
-                                 , db_pwd: str):
+    def __grant_all_permission__(self, db_infra_vars:DatabaseInfraVariables):
         global cursor, conn
         try:
-
-            conn = self.__connect_postgres__(db_name
+            default_db_name = db_infra_vars.__get_default_db_name__()
+            ssh_host = db_infra_vars.__get_ssh_host__()[1:-1][:-1]
+            ssh_pkey_path = db_infra_vars.__get_ssh_pkey_path__()[1:-1][:-1]
+            db_server_url = db_infra_vars.__get_db_server_url__()[1:-1][:-1]
+            db_user = db_infra_vars.__get_db_master_user__()[1:-1][:-1]
+            db_pwd = db_infra_vars.__get_db_master_pwd__()[1:-1][:-1]
+            conn = self.__connect_postgres__(default_db_name
                                              , ssh_host
                                              , ssh_pkey_path
                                              , db_server_url
@@ -57,10 +66,10 @@ class PostgresqlClient:
                                              , db_pwd)
             cursor = conn.cursor()
             conn.autocommit = True  # !
-            print("Creating Database........")
+            print("Creating Permissions in DB........")
             grant_cmd = sql.SQL('ALTER TABLESPACE pg_default OWNER TO {}'.format(db_user))
             cursor.execute(grant_cmd)
-            print("Database Creation Successfull")
+            print("Permission Creation Successfull")
         except Exception as e:
             conn.rollback()
             print(e.__str__())
@@ -70,17 +79,17 @@ class PostgresqlClient:
             cursor.close()
             conn.close()
 
-    def __create_database__(self, db_name: str
-                            , ssh_host: str
-                            , ssh_pkey_path: str
-                            , db_server_url: str
-                            , db_user: str
-                            , db_pwd: str
-                            , postgresdb: str):
+    def __create_database__(self, db_infra_vars:DatabaseInfraVariables):
         global cursor, conn
         try:
-
-            conn = self.__connect_postgres__(postgresdb
+            default_db_name = db_infra_vars.__get_default_db_name__()
+            db_name = db_infra_vars.__get_db_name__()[1:-1][:-1]
+            ssh_host = db_infra_vars.__get_ssh_host__()[1:-1][:-1]
+            ssh_pkey_path = db_infra_vars.__get_ssh_pkey_path__()[1:-1][:-1]
+            db_server_url = db_infra_vars.__get_db_server_url__()[1:-1][:-1]
+            db_user = db_infra_vars.__get_db_master_user__()[1:-1][:-1]
+            db_pwd = db_infra_vars.__get_db_master_pwd__()[1:-1][:-1]
+            conn = self.__connect_postgres__(default_db_name
                                              , ssh_host
                                              , ssh_pkey_path
                                              , db_server_url
@@ -104,15 +113,16 @@ class PostgresqlClient:
             cursor.close()
             conn.close()
 
-    def __create_schema__(self, db_name: str
-                          , ssh_host: str
-                          , ssh_pkey_path: str
-                          , db_server_url: str
-                          , db_user: str
-                          , db_pwd: str
-                          , schema: str):
+    def __create_schema__(self, db_infra_vars: DatabaseInfraVariables):
         global conn
         try:
+            schema = db_infra_vars.__get_schema__()[1:-1][:-1]
+            db_name = db_infra_vars.__get_db_name__()[1:-1][:-1]
+            ssh_host = db_infra_vars.__get_ssh_host__()[1:-1][:-1]
+            ssh_pkey_path = db_infra_vars.__get_ssh_pkey_path__()[1:-1][:-1]
+            db_server_url = db_infra_vars.__get_db_server_url__()[1:-1][:-1]
+            db_user = db_infra_vars.__get_db_master_user__()[1:-1][:-1]
+            db_pwd = db_infra_vars.__get_db_master_pwd__()[1:-1][:-1]
             conn = self.__connect_postgres__(db_name
                                              , ssh_host
                                              , ssh_pkey_path
@@ -145,14 +155,17 @@ class PostgresqlClient:
         finally:
             conn.close()
 
-    def __create_extension__(self, db_name: str
-                             , ssh_host: str
-                             , ssh_pkey_path: str
-                             , db_server_url: str
-                             , db_user: str
-                             , db_pwd: str):
+    def __create_extension__(self, db_infra_vars: DatabaseInfraVariables):
         global conn
         try:
+
+            db_name = db_infra_vars.__get_db_name__()[1:-1][:-1]
+            ssh_host = db_infra_vars.__get_ssh_host__()[1:-1][:-1]
+            ssh_pkey_path = db_infra_vars.__get_ssh_pkey_path__()[1:-1][:-1]
+            db_server_url = db_infra_vars.__get_db_server_url__()[1:-1][:-1]
+            db_user = db_infra_vars.__get_db_master_user__()[1:-1][:-1]
+            db_pwd = db_infra_vars.__get_db_master_pwd__()[1:-1][:-1]
+
             conn = self.__connect_postgres__(db_name
                                              , ssh_host
                                              , ssh_pkey_path
@@ -185,14 +198,16 @@ class PostgresqlClient:
         finally:
             conn.close()
 
-    def __create_tables__(self, db_name: str
-                          , ssh_host: str
-                          , ssh_pkey_path: str
-                          , db_server_url: str
-                          , db_user: str
-                          , db_pwd: str):
+    def __create_tables__(self, db_infra_vars:DatabaseInfraVariables):
         global conn
         try:
+            db_name = db_infra_vars.__get_db_name__()[1:-1][:-1]
+            ssh_host = db_infra_vars.__get_ssh_host__()[1:-1][:-1]
+            ssh_pkey_path = db_infra_vars.__get_ssh_pkey_path__()[1:-1][:-1]
+            db_server_url = db_infra_vars.__get_db_server_url__()[1:-1][:-1]
+            db_user = db_infra_vars.__get_db_master_user__()[1:-1][:-1]
+            db_pwd = db_infra_vars.__get_db_master_pwd__()[1:-1][:-1]
+
             conn = self.__connect_postgres__(db_name
                                              , ssh_host
                                              , ssh_pkey_path
@@ -203,9 +218,12 @@ class PostgresqlClient:
             print("Creating Tables for DB...")
 
             # Print all the databases
+            file_dir = os.path.dirname(os.path.realpath('__file__'))
+            # print(file_dir)
+
             try:
                 with conn.cursor() as cur:
-                    cur.execute(open("csx/core/data/migration/source/sample/schema/schema.sql", "r").read())
+                    cur.execute(open(file_dir+"/csx/core/data/migration/sample/schema/schema.sql", "r").read())
             except Exception as e:
                 print(e.__str__())
                 tb = traceback.format_exc()
@@ -224,15 +242,16 @@ class PostgresqlClient:
         finally:
             conn.close()
 
-    def __load_tables__(self, db_name: str
-                          , ssh_host: str
-                          , ssh_pkey_path: str
-                          , db_server_url: str
-                          , db_user: str
-                          , db_pwd: str
-                          , schema: str):
+    def __load_tables__(self, db_infra_vars: DatabaseInfraVariables):
         global conn
         try:
+            db_name = db_infra_vars.__get_db_name__()[1:-1][:-1]
+            ssh_host = db_infra_vars.__get_ssh_host__()[1:-1][:-1]
+            ssh_pkey_path = db_infra_vars.__get_ssh_pkey_path__()[1:-1][:-1]
+            db_server_url = db_infra_vars.__get_db_server_url__()[1:-1][:-1]
+            db_user = db_infra_vars.__get_db_master_user__()[1:-1][:-1]
+            db_pwd = db_infra_vars.__get_db_master_pwd__()[1:-1][:-1]
+            schema = db_infra_vars.__get_schema__()[1:-1][:-1]
             conn = self.__connect_postgres__(db_name
                                              , ssh_host
                                              , ssh_pkey_path
@@ -247,7 +266,7 @@ class PostgresqlClient:
             schema = schema+'.country'
             try:
                 # remove hardcoded schema accept from argument
-                f = open('csx/core/data/migration/source/sample/data/country_202305191429.csv', "r")
+                f = open('csx/core/data/migration/sample/data/country_202305191429.csv', "r")
                 cur.execute("Truncate {} Cascade;".format(schema))
                 cur.copy_expert("copy {} from STDIN CSV HEADER QUOTE '\"'".format(schema), f)
             except Exception as e:
@@ -268,14 +287,15 @@ class PostgresqlClient:
         finally:
             conn.close()
 
-    def __show_databases__(self, db_name: str
-                          , ssh_host: str
-                          , ssh_pkey_path: str
-                          , db_server_url: str
-                          , db_user: str
-                          , db_pwd: str):
+    def __show_databases__(self, db_infra_vars: DatabaseInfraVariables):
         global conn
         try:
+            db_name = db_infra_vars.__get_db_name__()[1:-1][:-1]
+            ssh_host = db_infra_vars.__get_ssh_host__()[1:-1][:-1]
+            ssh_pkey_path = db_infra_vars.__get_ssh_pkey_path__()[1:-1][:-1]
+            db_server_url = db_infra_vars.__get_db_server_url__()[1:-1][:-1]
+            db_user = db_infra_vars.__get_db_master_user__()[1:-1][:-1]
+            db_pwd = db_infra_vars.__get_db_master_pwd__()[1:-1][:-1]
             conn = self.__connect_postgres__(db_name
                                              , ssh_host
                                              , ssh_pkey_path
@@ -307,7 +327,16 @@ class PostgresqlClient:
         finally:
             conn.close()
 
-# if __name__ == "__main__":
+if __name__ == "__main__":
+    db_name = 'postgres'
+    ssh_host = '3.236.183.225'
+    pkey_path = '/Users/akshaytigga/Downloads/catdevdopsec2kp1.pem'
+    user = 'salesadmin'
+    pwd = 'salesadmin'
+    server_url = 'salesdev.cluster-cefcmch6dncq.us-east-1.rds.amazonaws.com'
+    client = PostgresqlClient()
+
+    client.__connect_postgres__(db_name,ssh_host,pkey_path,server_url,user,pwd)
 #     # user = "jcbdevadmin"
 #     # dbname = "jcbdevdb"
 #     # schema_name = "jcbdevschema"
