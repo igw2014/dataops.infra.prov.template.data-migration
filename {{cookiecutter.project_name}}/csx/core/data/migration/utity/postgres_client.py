@@ -155,16 +155,23 @@ class PostgresqlClient:
         finally:
             conn.close()
 
-    def __create_extension__(self, db_infra_vars: DatabaseInfraVariables):
+    def __create_extension__(self, db_infra_vars: DatabaseInfraVariables, is_prod:bool):
         global conn
         try:
 
-            db_name = db_infra_vars.__get_db_name__()[1:-1][:-1]
+            if is_prod:
+                db_name = db_infra_vars.__get_prod_db_name__()[1:-1][:-1]
+                db_server_url = db_infra_vars.__get_prod_db_server_url__()[1:-1][:-1]
+                db_user = db_infra_vars.__get_prod_master_user__()[1:-1][:-1]
+                db_pwd = db_infra_vars.__get_prod_master_pwd__()[1:-1][:-1]
+            else:
+                db_name = db_infra_vars.__get_db_name__()[1:-1][:-1]
+                db_server_url = db_infra_vars.__get_db_server_url__()[1:-1][:-1]
+                db_user = db_infra_vars.__get_db_master_user__()[1:-1][:-1]
+                db_pwd = db_infra_vars.__get_db_master_pwd__()[1:-1][:-1]
+
             ssh_host = db_infra_vars.__get_ssh_host__()[1:-1][:-1]
             ssh_pkey_path = db_infra_vars.__get_ssh_pkey_path__()[1:-1][:-1]
-            db_server_url = db_infra_vars.__get_db_server_url__()[1:-1][:-1]
-            db_user = db_infra_vars.__get_db_master_user__()[1:-1][:-1]
-            db_pwd = db_infra_vars.__get_db_master_pwd__()[1:-1][:-1]
 
             conn = self.__connect_postgres__(db_name
                                              , ssh_host
@@ -172,7 +179,7 @@ class PostgresqlClient:
                                              , db_server_url
                                              , db_user
                                              , db_pwd)
-            conn.autocommit = True  # !
+            conn.autocommit = True
             print("Creating extension for DB...")
             s = f"create extension pglogical;"
 
@@ -219,7 +226,7 @@ class PostgresqlClient:
 
             # Print all the databases
             file_dir = os.path.dirname(os.path.realpath('__file__'))
-            # print(file_dir)
+            print(file_dir)
 
             try:
                 with conn.cursor() as cur:
