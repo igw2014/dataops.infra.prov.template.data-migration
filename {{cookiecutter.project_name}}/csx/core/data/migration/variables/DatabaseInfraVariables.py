@@ -20,6 +20,7 @@ class DatabaseInfraVariables:
     proddb_master_pwd = ''
     proddb_server_url = ''
     prod_db_version_family = ''
+    db_instance_server = ''
 
     def __init__(self, scope: Construct, project_vars: dict):
         # self.db_subnet_group_name = project_vars["db_subnet_group_name"]
@@ -38,6 +39,7 @@ class DatabaseInfraVariables:
         self.proddb_server_url = project_vars["proddb_server_url"]
         self.prod_db_name = project_vars["prod_db_name"]
         self.prod_db_version_family = project_vars["prod_db_version_family"]
+        self.db_instance_server = project_vars["db_instance_server"]
 
     # def __get_db_subnet_group_name__(self):
     #     return self.db_subnet_group_name
@@ -89,4 +91,7 @@ class DatabaseInfraVariables:
 
     def __get_prod_db_version_family__(self):
         return self.prod_db_version_family
+
+    def __get_db_instance_server__(self):
+        return self.db_instance_server
 

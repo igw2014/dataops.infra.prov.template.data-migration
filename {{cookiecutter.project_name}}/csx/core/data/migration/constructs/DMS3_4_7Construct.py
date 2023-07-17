@@ -43,7 +43,7 @@ class DMS3_4_7Construct(Construct):
         db_name = database_infra_variables.__get_db_name__()[1:-1][:-1]
         db_master_user = database_infra_variables.__get_db_master_user__()[1:-1][:-1]
         db_master_pwd = database_infra_variables.__get_db_master_pwd__()[1:-1][:-1]
-        server_name = database_infra_variables.__get_server_name__()[1:-1][:-1]
+        db_instance_server = database_infra_variables.__get_db_instance_server__()[1:-1][:-1]
         target_name = dms3_4_7_vars.__get_target_name__()[1:-1][:-1]
         migration_type = dms3_4_7_vars.__get_migration_type__()[1:-1][:-1]
         data_replication_task_name = dms3_4_7_vars.__get_data_replication_task_name__()[1:-1][:-1]
@@ -103,7 +103,7 @@ class DMS3_4_7Construct(Construct):
             engine_name="aurora-postgresql",
             username=db_master_user,
             password=db_master_pwd,
-            server_name=server_name,
+            server_name=db_instance_server,
             port=5432,
             scope=scope,
             id_="dms_source_endpoint"
