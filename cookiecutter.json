@@ -1,5 +1,6 @@
 {
 "project_name": "default_name",
 "tenant_name": "test",
-"environment": "default_env"
+"environment": "default_env",
+"region": "default"
 }
